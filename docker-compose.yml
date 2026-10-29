@@ -1,0 +1,10 @@
+services:
+  soroka:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      COOKIES_FILE: /app/cookies.txt
+    volumes:
+      - ./cookies.txt:/app/cookies.txt:ro
+    mem_limit: 700m
