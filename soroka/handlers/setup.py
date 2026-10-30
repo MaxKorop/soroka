@@ -73,7 +73,7 @@ async def show_config(message: Message, config: BotConfig, settings: Settings) -
     ]
     user = message.from_user
     if user and user.id == config.owner_id:
-        lines.append("👑 Ти господар гнізда")
+        lines.append("👑 Ти — господар гнізда")
     await message.reply("\n".join(lines))
 
 
