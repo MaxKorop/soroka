@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
@@ -11,9 +11,10 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from . import texts
+from .botconfig import BotConfig
 from .config import load_settings
 from .db import create_pool
-from .handlers import groceries, movies, videos
+from .handlers import groceries, movies, setup, videos
 
 
 async def main() -> None:
@@ -27,20 +28,23 @@ async def main() -> None:
         session=AiohttpSession(timeout=300),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    dp = Dispatcher(settings=settings, pool=pool)
+    config = BotConfig(pool, settings.owner_id or None)
+    await config.load()
+    dp = Dispatcher(settings=settings, pool=pool, config=config)
 
-    # Commands first, so the link grabber (catch-all on text) never swallows them.
-    routers = (movies.router, groceries.router, videos.router)
-    dp.include_routers(*routers)
+    core = Router(name="core")
 
-    # Only ever react inside our private group (filters don't propagate to child routers).
-    in_group = F.chat.id == settings.group_id
-    for r in (dp, *routers):
-        r.message.filter(in_group)
-
-    @dp.message(Command("start", "help"))
+    @core.message(Command("start", "help"))
     async def help_(message: Message) -> None:
         await message.reply(texts.HELP)
+
+    # /help and /setup work anywhere (/setup is owner only and registers the group); everything
+    # else only inside registered groups. Filters go on each leaf router, never on `dp`: a failing root filter
+    # stops propagation into child routers. Commands come before the link grabber's catch-all.
+    gated = (setup.gated_router, movies.router, groceries.router, videos.router)
+    dp.include_routers(core, setup.router, *gated)
+    for r in gated:
+        r.message.filter(setup.in_group)
 
     try:
         await dp.start_polling(bot)
