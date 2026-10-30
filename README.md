@@ -63,6 +63,13 @@ cp .env.example .env        # впиши лише BOT_TOKEN (і за бажан�
 
 Таблиці створюються автоматично при старті (`soroka/schema.sql`).
 
+## CI/CD
+
+`.github/workflows/deploy.yml`: на кожен push/PR перевіряється, що код компілюється й імпортується; на push у `main` після цього
+по SSH оновлюється VM (`git reset --hard origin/main` + `docker compose up -d --build`). `.env` і `cookies.txt` на VM не чіпаються.
+
+Потрібні GitHub Secrets (Settings → Secrets and variables → Actions): `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`.
+
 ## Підтримка
 
 yt-dlp ламається разом з платформами — оновлюй регулярно:
