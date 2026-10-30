@@ -3,7 +3,13 @@ name: CI/CD
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "assets/**"
+      - "README.md"
   pull_request:
+    paths-ignore:
+      - "assets/**"
+      - "README.md"
 
 jobs:
   check:
