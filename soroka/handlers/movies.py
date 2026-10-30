@@ -4,11 +4,15 @@ import html
 from collections import defaultdict
 
 import asyncpg
-from aiogram import Router
+from aiogram import Bot, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
 from .. import texts
+from ..botconfig import BotConfig
+from ..config import Settings
+from ..services import tmdb
+from .common import say
 
 router = Router(name="movies")
 
@@ -20,26 +24,33 @@ def _who(message: Message) -> str | None:
 
 
 @router.message(Command("movie_add"))
-async def movie_add(message: Message, command: CommandObject, pool: asyncpg.Pool) -> None:
+async def movie_add(message: Message, bot: Bot, settings: Settings, config: BotConfig, command: CommandObject, pool: asyncpg.Pool) -> None:
     if not command.args:
-        await message.reply(texts.MOVIE_USAGE)
+        await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_USAGE)
         return
     title, _, genre = command.args.partition("|")
-    title, genre = title.strip(), genre.strip() or DEFAULT_GENRE
+    title, genre = title.strip(), genre.strip()
     if not title:
-        await message.reply(texts.MOVIE_USAGE)
+        await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_USAGE)
         return
+    # Manual genre wins; otherwise ask TMDB (if configured), otherwise leave it ungrouped.
+    genre = genre or await tmdb.lookup_genre(settings.tmdb_api_key, title) or DEFAULT_GENRE
     await pool.execute(
-        "INSERT INTO movies (title, genre, added_by) VALUES ($1, $2, $3)", title, genre, _who(message)
+        "INSERT INTO movies (title, genre, added_by, chat_id) VALUES ($1, $2, $3, $4)",
+        title,
+        genre,
+        _who(message),
+        message.chat.id,
     )
-    await message.reply(texts.MOVIE_ADDED.format(title=html.escape(title), genre=html.escape(genre)))
+    await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_ADDED.format(title=html.escape(title), genre=html.escape(genre)))
 
 
 @router.message(Command("movies"))
-async def movies(message: Message, pool: asyncpg.Pool) -> None:
-    rows = await pool.fetch("SELECT id, title, genre, watched FROM movies ORDER BY genre, title")
+async def movies(message: Message, bot: Bot, config: BotConfig, pool: asyncpg.Pool) -> None:
+    rows = await pool.fetch("SELECT id, title, genre, watched FROM movies WHERE chat_id = $1 ORDER BY genre, title", message.chat.id
+    )
     if not rows:
-        await message.reply(texts.MOVIES_EMPTY)
+        await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIES_EMPTY)
         return
 
     sections = {False: texts.MOVIES_HEADER, True: texts.WATCHED_HEADER}
@@ -55,19 +66,35 @@ async def movies(message: Message, pool: asyncpg.Pool) -> None:
             parts.append(f"\n<i>{html.escape(genre)}</i>")
             parts.extend(lines)
         parts.append("")
-    await message.reply("\n".join(parts).strip())
+    await say(message, bot, config.movies_topic(message.chat.id), "\n".join(parts).strip())
 
 
 @router.message(Command("movie_done"))
-async def movie_done(message: Message, command: CommandObject, pool: asyncpg.Pool) -> None:
+async def movie_done(message: Message, bot: Bot, config: BotConfig, command: CommandObject, pool: asyncpg.Pool) -> None:
     if not command.args or not command.args.strip().isdigit():
-        await message.reply(texts.MOVIE_DONE_USAGE)
+        await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_DONE_USAGE)
         return
     title = await pool.fetchval(
-        "UPDATE movies SET watched = TRUE, watched_at = now() WHERE id = $1 AND NOT watched RETURNING title",
+        "UPDATE movies SET watched = TRUE, watched_at = now() WHERE id = $1 AND chat_id = $2 AND NOT watched RETURNING title",
         int(command.args),
+        message.chat.id,
     )
     if title is None:
-        await message.reply(texts.MOVIE_NOT_FOUND)
+        await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_NOT_FOUND)
         return
-    await message.reply(texts.MOVIE_DONE.format(title=html.escape(title)))
+    await say(message, bot, config.movies_topic(message.chat.id), texts.MOVIE_DONE.format(title=html.escape(title)))
+
+
+@router.message(Command("movie_del"))
+async def movie_del(message: Message, bot: Bot, config: BotConfig, command: CommandObject, pool: asyncpg.Pool) -> None:
+    topic = config.movies_topic(message.chat.id)
+    if not command.args or not command.args.strip().isdigit():
+        await say(message, bot, topic, texts.MOVIE_DEL_USAGE)
+        return
+    title = await pool.fetchval(
+        "DELETE FROM movies WHERE id = $1 AND chat_id = $2 RETURNING title", int(command.args), message.chat.id
+    )
+    if title is None:
+        await say(message, bot, topic, texts.MOVIE_NOT_FOUND)
+        return
+    await say(message, bot, topic, texts.MOVIE_DELETED.format(title=html.escape(title)))
