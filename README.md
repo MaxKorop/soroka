@@ -69,8 +69,13 @@ cp .env.example .env        # впиши лише BOT_TOKEN (і за бажан�
 
 ## CI/CD
 
-`.github/workflows/deploy.yml`: на кожен push/PR перевіряється, що код компілюється й імпортується; на push у `main` після цього
-по SSH оновлюється VM (`git reset --hard origin/main` + `docker compose up -d --build`). `.env` і `cookies.txt` на VM не чіпаються.
+- `.github/workflows/check.yml` — перевірка (код компілюється й імпортується). Запускається на кожен PR і є обов'язковою перед merge у `main`.
+- `.github/workflows/deploy.yml` — деплой на VM по SSH (`git reset --hard origin/main` + `docker compose up -d --build`).
+  Запускається на push у `main` (крім змін лише в `assets/` і `README.md`) або вручну (*Actions → Deploy → Run workflow*),
+  і тільки якщо ініціатор — власник репозиторію. Перед деплоєм повторно виконується `check`. `.env` і `cookies.txt` на VM не чіпаються.
+- `.github/rulesets/main.json` — правила для `main`: тільки через PR, обов'язковий `check`, гілка актуальна, без конфліктів, лінійна історія,
+  без force-push і видалення. **Автоматично не застосовується** — імпортуй вручну (Settings → Rules → Rulesets → New ruleset → Import a ruleset)
+  або командою `gh api repos/<owner>/<repo>/rulesets --method POST --input .github/rulesets/main.json`.
 
 Потрібні GitHub Secrets (Settings → Secrets and variables → Actions): `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`.
 
