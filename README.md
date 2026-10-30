@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/soroka_dealwithit_round.svg" alt="Сорока" width="160" height="160">
+</p>
+
 # Сорока 🐦
 
 Приватний Telegram-бот для двох: «сорока на хвості принесла».

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<clipPath id="round"><circle cx="256" cy="256" r="256"/></clipPath>
+<g clip-path="url(#round)">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5d8ff"/><stop offset="1" stop-color="#4dabf7"/></linearGradient>
+<linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b6ca8"/><stop offset=".6" stop-color="#17a589"/><stop offset="1" stop-color="#0b3d5c"/></linearGradient>
+</defs>
+<rect width="512" height="512" fill="url(#bg)"/>
+<g opacity=".18" fill="#fff"><circle cx="440" cy="90" r="46"/><circle cx="70" cy="420" r="30"/></g>
+<!-- branch -->
+<path d="M0 408 Q150 392 260 402 T512 396" stroke="#6b4423" stroke-width="16" fill="none" stroke-linecap="round"/>
+<!-- tail -->
+<path d="M300 300 L458 392 Q474 404 452 414 L292 372 Z" fill="url(#wing)" stroke="#0a2438" stroke-width="5" stroke-linejoin="round"/>
+<path d="M310 322 L442 396" stroke="#7fe0cf" stroke-width="4" opacity=".6"/>
+<!-- legs -->
+<path d="M226 372 L222 404 M222 404 l-14 6 M222 404 l14 6 M262 372 L262 402 M262 402 l-14 7 M262 402 l14 7" stroke="#e08a1e" stroke-width="7" stroke-linecap="round" fill="none"/>
+<!-- body -->
+<ellipse cx="262" cy="300" rx="112" ry="86" transform="rotate(-18 262 300)" fill="#141414"/>
+<ellipse cx="226" cy="322" rx="62" ry="52" transform="rotate(-18 226 322)" fill="#fafafa"/>
+<!-- wing -->
+<path d="M262 252 Q352 236 392 318 Q330 372 262 346 Q238 300 262 252 Z" fill="url(#wing)" stroke="#0a2438" stroke-width="5" stroke-linejoin="round"/>
+<path d="M286 276 Q338 272 366 316" stroke="#7fe0cf" stroke-width="4" fill="none" opacity=".55"/>
+<!-- head -->
+<circle cx="188" cy="200" r="70" fill="#141414"/>
+<path d="M148 196 L66 218 L148 238 Z" fill="#2a2a2a" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+<g transform="translate(184 184) scale(.78) translate(-184 -184)">
+<defs><linearGradient id="lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7df3ff"/><stop offset=".45" stop-color="#1e7bff"/><stop offset="1" stop-color="#0a2a8a"/></linearGradient></defs>
+<rect x="96" y="158" width="78" height="46" rx="8" fill="url(#lens)" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+<rect x="180" y="158" width="78" height="46" rx="8" fill="url(#lens)" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+<rect x="172" y="170" width="10" height="10" fill="#fff"/>
+<path d="M258 172 L272 166" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+<path d="M108 196 L134 166 M124 196 L150 166" stroke="#fff" stroke-width="6" opacity=".75" stroke-linecap="round"/>
+<path d="M192 196 L218 166 M208 196 L234 166" stroke="#fff" stroke-width="6" opacity=".75" stroke-linecap="round"/>
+</g>
+</g>
+</svg>
