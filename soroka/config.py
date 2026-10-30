@@ -6,15 +6,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_ignore_empty=True)
 
     bot_token: str
-    group_id: int
-    videos_topic_id: int
     database_url: str
 
+    # Optional: Telegram user id of the owner. If empty, the first person to run /setup becomes the owner.
+    owner_id: int = 0
+    # Optional: fills in the genre when /movie_add is called without one.
+    tmdb_api_key: str = ""
+
     cookies_file: str = ""
-    delete_original: bool = False
     max_video_bytes: int = 50 * 1024 * 1024
 
     @property
