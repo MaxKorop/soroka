@@ -1,6 +1,6 @@
 """All user-facing strings live here so the bot's voice is easy to tweak."""
 
-VIDEO_CAPTION = "Сорока на хвості принесла 🎬"
+VIDEO_CAPTION = "Сорока просорокала 🎬"
 VIDEO_FROM = "від {name}"
 VIDEO_WORKING = "Сорока полетіла по відео… 🐦"
 VIDEO_FAILED = "Сорока злетала, але нічого не принесла 🪹 Можливо, відео приватне або платформа знову щось зламала."
