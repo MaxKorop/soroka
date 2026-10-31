@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -114,7 +115,10 @@ def _download_sync(url: str, out_dir: Path, cookies: Path | None, max_bytes: int
             "retries": 3,
         }
         if cookies:
-            opts["cookiefile"] = str(cookies)
+            # yt-dlp writes the cookie jar back on close; keep the read-only mount untouched.
+            jar = out_dir / "cookies.txt"
+            shutil.copyfile(cookies, jar)
+            opts["cookiefile"] = str(jar)
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(url, download=True)
